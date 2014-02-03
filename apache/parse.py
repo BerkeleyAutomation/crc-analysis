@@ -1,3 +1,5 @@
+"""Analysis tools for the Apache logs to determine if stuff from apache logs"""
+
 import os
 import re
 
@@ -10,7 +12,8 @@ _regex = '([(\d\.)]+) - - \[(.*?)\] "(.*?)" (\d+) (\d+) "(.*?)" "(.*?)"'
 ## 5 => referer
 ## 6 => type
 
-def _line( line ):
+def _mobile( line, url ):
+	"""Determine if the request made to path (url) was done using a mobile device"""
 
 	parts = re.match( _regex , line)
 
@@ -19,18 +22,19 @@ def _line( line ):
 
 	parts = parts.groups()
 
-	if 'savecomment' in parts[2]:
+	if url in parts[2]:
 			print parts[1] + ',' + parts[6]
         	# print line
 
 ## https://github.com/selwin/python-user-agents
 
-def parse( path = '../../apache-data/'):
+def parse( parser, scope, path = '../../apache-data/'):
+	"""Generic parser module, takes parser function, possible scope/limits for parsin and path as parameters"""
 	for f in os.listdir( path ):
-		map( _line , open( path + f, 'r') )
+		map( lambda line : parser( line, scope) , open( path + f, 'r') )
 
 if __name__ == '__main__':
-	parse()
+	parse( _mobile, 'savecomment' )
 
 
 
